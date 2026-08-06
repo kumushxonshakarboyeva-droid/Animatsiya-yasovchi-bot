@@ -34,24 +34,3 @@ async def main():
         logging.info("Stiker router muvaffaqiyatli ulandi.")
     else:
         logging.error("Stiker router topilmadi!")
-
-    # Render port sozlamasi
-    app = web.Application()
-    app.router.add_get("/", handle_ping)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    
-    port = int(os.environ.get("PORT", 8080))
-    site = web.TCPSite(runner, "0.0.0.0", port)
-    await site.start()
-    logging.info(f"Web server {port}-portda ishga tushdi.")
-
-    # Webhook-ni tozalash
-    await bot.delete_webhook(drop_pending_updates=True)
-    
-    # Pollingni boshlash
-    logging.info("Bot polling rejimi boshlandi...")
-    await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
