@@ -273,14 +273,37 @@ async def create_sticker_pack_on_telegram(message: Message, session: UserSession
         await message.answer(f"❌ Xatolik yuz berdi: `{err}`")
 
 # ─────────────────────────────────────────────────────────────────────────────
+from aiohttp import web
+
+# Render porti uchun soxta Web Server funksiyasi
+async def handle_ping(request):
+    return web.Response(text="Bot is live and running!")
+
 async def main():
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     if not token:
         raise ValueError("TELEGRAM_BOT_TOKEN topilmadi!")
-        
+
     bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
-    dp.include_router(router)
+    
+    # Botingizdagi routerni ulash (agar mavjud bo'lsa)
+    if 'router' in globals():
+        dp.include_router(router)
+
+    # --- Render Port Sozlamasi ---
+    app = web.Application()
+    app.router.add_get("/", handle_ping)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    print(f"Web server {port}-portda ishga tushdi.")
+    # -----------------------------
+
+    # Botni ishga tushirish
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
