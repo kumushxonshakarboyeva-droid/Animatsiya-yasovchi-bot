@@ -287,11 +287,11 @@ async def main():
     bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
     
-    # Botingizdagi routerni ulash (agar mavjud bo'lsa)
+    # Handlers / Routerni ulash
     if 'router' in globals():
         dp.include_router(router)
 
-    # --- Render Port Sozlamasi ---
+    # Render uchun soxta Web Server
     app = web.Application()
     app.router.add_get("/", handle_ping)
     runner = web.AppRunner(app)
@@ -300,11 +300,9 @@ async def main():
     port = int(os.environ.get("PORT", 8080))
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
-    print(f"Web server {port}-portda ishga tushdi.")
-    # -----------------------------
+
+    # Webhook-ni to'liq o'chirish va yig'ilib qolgan buyruqlarni tozalash (MUHIM)
+    await bot.delete_webhook(drop_pending_updates=True)
 
     # Botni ishga tushirish
     await dp.start_polling(bot)
-
-if __name__ == "__main__":
-    asyncio.run(main())
